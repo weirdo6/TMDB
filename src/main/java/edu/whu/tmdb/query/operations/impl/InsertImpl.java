@@ -69,7 +69,9 @@ public class InsertImpl implements Insert {
                 throw new TMDBException(/*"Insert error: columns size doesn't match tuple size"*/);
             }
             tupleIdList.add(insert(classId, columns, tuple, attrNum, attrIdList));
+            
         }
+
     }
 
     /**

@@ -84,7 +84,7 @@ public class SelectImpl implements edu.whu.tmdb.query.operations.Select {
         if (plainSelect.getWhere() != null){
             Where where = new Where();
             selectResult = where.where(plainSelect, selectResult);
-        }
+        } 
         if (plainSelect.getLimit() != null){
             selectResult = limit(Integer.parseInt(plainSelect.getLimit().getRowCount().toString()), selectResult);
         }
