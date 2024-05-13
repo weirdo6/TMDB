@@ -40,8 +40,10 @@ public class Where {
     Formula formula = new Formula();
 
     public SelectResult where(PlainSelect plainSelect, SelectResult selectResult) throws TMDBException, IOException {
-        execute(plainSelect.getWhere(), selectResult);
-        return selectResult;
+        //execute(plainSelect.getWhere(), selectResult);
+        //return selectResult;
+        SelectResult res = execute(plainSelect.getWhere(), selectResult);
+        return res;
     }
 
     /**
@@ -59,10 +61,20 @@ public class Where {
         switch (opt){
             case "AndExpression":
                 result = andExpression((AndExpression) expression, selectResult); break;
+            case "OrExpression":
+                result = orExpression((OrExpression) expression, selectResult); break;
             case "InExpression":
                 result = inExpression((InExpression) expression, selectResult); break;
             case "EqualsTo":
                 result = equalsToExpression((EqualsTo) expression, selectResult); break;
+            case "MinorThan":
+                result = minorThan((MinorThan) expression, selectResult); break;
+            case "MinorThanEquals":
+                result = minorThanEquals((MinorThanEquals) expression, selectResult); break;
+            case "GreaterThan":
+                result = greaterThan((GreaterThan) expression, selectResult); break;
+            case "GreaterThanEquals":
+                result = greaterThanEquals((GreaterThanEquals) expression, selectResult); break;
             case "Function":
                 result = function((Function)expression, selectResult); break;
         }
@@ -196,7 +208,17 @@ public class Where {
 
     public SelectResult orExpression(OrExpression expression,SelectResult selectResult) throws TMDBException, IOException {
         // TODO-task7
-        return selectResult;
+        Expression left = expression.getLeftExpression();
+        Expression right = expression.getRightExpression();
+        SelectResult selectResult1 = execute(left, selectResult);
+        SelectResult selectResult2 = execute(right, selectResult);
+        HashSet<Tuple> selectResultSet1 = getTupleSet(selectResult1);
+        HashSet<Tuple> selectResultSet2 = getTupleSet(selectResult2);
+        HashSet<Tuple> res = new HashSet<>();
+
+        res.addAll(selectResultSet1);
+        res.addAll(selectResultSet2);
+        return getSelectResultFromSet(selectResult, res);
     }
 
     public SelectResult inExpression(InExpression expression, SelectResult selectResult) throws TMDBException, IOException {
@@ -240,26 +262,54 @@ public class Where {
 
     public SelectResult minorThan(MinorThan expression,SelectResult selectResult) throws TMDBException {
         // TODO-task6
-
-        return selectResult;
+        ArrayList<Object> left = formula.formulaExecute(expression.getLeftExpression(), selectResult);
+        ArrayList<Object> right = formula.formulaExecute(expression.getRightExpression(), selectResult);
+        HashSet<Tuple> set = new HashSet<>();
+        for (int i = 0; i < left.size(); i++) {
+            if (compare(left.get(i), right.get(i)) == -1) {
+                set.add(selectResult.getTpl().tuplelist.get(i));
+            }
+        }
+        return getSelectResultFromSet(selectResult, set);
     }
 
     public SelectResult minorThanEquals(MinorThanEquals expression, SelectResult selectResult) throws TMDBException {
         // TODO-task6
-
-        return selectResult;
+        ArrayList<Object> left = formula.formulaExecute(expression.getLeftExpression(), selectResult);
+        ArrayList<Object> right = formula.formulaExecute(expression.getRightExpression(), selectResult);
+        HashSet<Tuple> set = new HashSet<>();
+        for (int i = 0; i < left.size(); i++) {
+            if (compare(left.get(i), right.get(i)) == -1 || compare(left.get(i), right.get(i)) == 0) {
+                set.add(selectResult.getTpl().tuplelist.get(i));
+            }
+        }
+        return getSelectResultFromSet(selectResult, set);
     }
 
     public SelectResult greaterThan(GreaterThan expression, SelectResult selectResult) throws TMDBException {
         // TODO-task6
-
-        return selectResult;
+        ArrayList<Object> left = formula.formulaExecute(expression.getLeftExpression(), selectResult);
+        ArrayList<Object> right = formula.formulaExecute(expression.getRightExpression(), selectResult);
+        HashSet<Tuple> set = new HashSet<>();
+        for (int i = 0; i < left.size(); i++) {
+            if (compare(left.get(i), right.get(i)) == 1) {
+                set.add(selectResult.getTpl().tuplelist.get(i));
+            }
+        }
+        return getSelectResultFromSet(selectResult, set);
     }
 
     public SelectResult greaterThanEquals(GreaterThanEquals expression, SelectResult selectResult) throws TMDBException {
         // TODO-task6
-
-        return selectResult;
+        ArrayList<Object> left = formula.formulaExecute(expression.getLeftExpression(), selectResult);
+        ArrayList<Object> right = formula.formulaExecute(expression.getRightExpression(), selectResult);
+        HashSet<Tuple> set = new HashSet<>();
+        for (int i = 0; i < left.size(); i++) {
+            if (compare(left.get(i), right.get(i)) == 1 || compare(left.get(i), right.get(i)) == 0) {
+                set.add(selectResult.getTpl().tuplelist.get(i));
+            }
+        }
+        return getSelectResultFromSet(selectResult, set);
     }
 
     public HashSet<Tuple> getTupleSet(SelectResult selectResult){
@@ -271,8 +321,16 @@ public class Where {
         for(Tuple tuple : set){
             tupleList.addTuple(tuple);
         }
-        selectResult.setTpl(tupleList);
-        return selectResult;
+        //selectResult.setTpl(tupleList);
+        SelectResult newReuslt = new SelectResult(
+            tupleList,
+            selectResult.getClassName(),
+            selectResult.getAttrname(),
+            selectResult.getAlias(),
+            selectResult.getAttrid(),
+            selectResult.getType()
+        );
+        return newReuslt;
     }
 
     // 进行类型转换，很多时候需要使用
