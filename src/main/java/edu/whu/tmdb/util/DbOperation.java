@@ -1,5 +1,6 @@
 package edu.whu.tmdb.util;
 
+import edu.whu.tmdb.query.Transaction;
 import edu.whu.tmdb.query.operations.utils.MemConnect;
 import edu.whu.tmdb.query.operations.utils.SelectResult;
 import edu.whu.tmdb.storage.memory.SystemTable.BiPointerTableItem;
@@ -7,6 +8,8 @@ import edu.whu.tmdb.storage.memory.SystemTable.ClassTableItem;
 import edu.whu.tmdb.storage.memory.SystemTable.DeputyTableItem;
 import edu.whu.tmdb.storage.memory.SystemTable.SwitchingTableItem;
 import edu.whu.tmdb.storage.memory.Tuple;
+//更改1，防止第一个命令读取时MemManager对外接口还未准备好
+import edu.whu.tmdb.query.Transaction;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,12 +43,16 @@ public class DbOperation {
      */
     public static void resetDB() {
         // 仓库路径
-        String repositoryPath = "D:\\cs\\JavaProject\\TMDB";
+        //String repositoryPath = "D:\\tmdb";
+        String repositoryPath = ".";
 
         // 子目录路径
-        String sysPath = repositoryPath + File.separator + "data\\sys";
+        /*String sysPath = repositoryPath + File.separator + "data\\sys";
         String logPath = repositoryPath + File.separator + "data\\log";
-        String levelPath = repositoryPath + File.separator + "data\\level";
+        String levelPath = repositoryPath + File.separator + "data\\level";*/
+        String sysPath = repositoryPath + File.separator + "data/sys";
+        String logPath = repositoryPath + File.separator + "data/log";
+        String levelPath = repositoryPath + File.separator + "data/level";
 
         List<String> filePath = new ArrayList<>();
         filePath.add(sysPath);
@@ -78,17 +85,37 @@ public class DbOperation {
 
     public static void showBiPointerTable() {
         // TODO-task2
+        Transaction transaction = Transaction.getInstance();
+        System.out.println(String.format("|%20s|%20s|%20s|%20s","cls id","obj id","dep cls id","dep obj id"));
+        for(BiPointerTableItem item:MemConnect.getBiPointerTableList())
+        {
+            System.out.println(String.format("|%20d|%20d|%20d|%20d",item.classid,item.objectid,item.deputyid,item.deputyobjectid));
+        }
     }
 
     public static void showClassTable() {
         // TODO-task2
+        Transaction transaction = Transaction.getInstance();
+        System.out.println(String.format("|%20s|%20s|%20s|%20s|%20s","class name","class id","attribute name","attribute id","attribute type"));
+        for (ClassTableItem item : MemConnect.getClassTableList()) {
+            System.out.println(String.format("|%20s|%20d|%20s|%20d|%20s",item.classname,item.classid,item.attrname,item.attrid,item.attrtype));
+        }
     }
 
     public static void showDeputyTable() {
-        // TODO-task2
+        Transaction transaction = Transaction.getInstance();
+        System.out.println(String.format("|%20s|%20s","ori cls id","dep cls id"));
+        for (DeputyTableItem item : MemConnect.getDeputyTableList()) {
+            System.out.println(String.format("|%20d|%20d",item.originid,item.deputyid));
+        }
     }
 
     public static void showSwitchingTable() {
         // TODO-task2
+        Transaction transaction = Transaction.getInstance();
+        System.out.println(String.format("|%20s|%20s|%20s|%20s|%20s|%20s","origin cls id","origin attr id","origin attr name","dep cls id","dep attr id","dep attr name"));
+        for (SwitchingTableItem item : MemConnect.getSwitchingTableList()) {
+            System.out.println(String.format("|%20s|%20d|%20s|%20d|%20s|%20s",item.oriId,item.oriAttrid,item.oriAttr,item.deputyId,item.deputyAttrId,item.deputyAttr));
+        }
     }
 }

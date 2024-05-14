@@ -84,7 +84,7 @@ public class SelectImpl implements edu.whu.tmdb.query.operations.Select {
         if (plainSelect.getWhere() != null){
             Where where = new Where();
             selectResult = where.where(plainSelect, selectResult);
-        }
+        } 
         if (plainSelect.getLimit() != null){
             selectResult = limit(Integer.parseInt(plainSelect.getLimit().getRowCount().toString()), selectResult);
         }
@@ -102,7 +102,24 @@ public class SelectImpl implements edu.whu.tmdb.query.operations.Select {
 
     private SelectResult limit(int limit,SelectResult selectResult) {
         // TODO-task9
-        return selectResult;
+        int count = 0;
+        TupleList tupleList = new TupleList();
+        if(limit > 0){
+            for(Tuple tuple : selectResult.getTpl().tuplelist){
+                ++count;
+                if(count > limit) break;
+                tupleList.addTuple(tuple);
+            }
+        }
+        SelectResult newReuslt = new SelectResult(
+            tupleList,
+            selectResult.getClassName(),
+            selectResult.getAttrname(),
+            selectResult.getAlias(),
+            selectResult.getAttrid(),
+            selectResult.getType()
+        );
+        return newReuslt;
     }
 
     private SelectResult groupByElicit(PlainSelect plainSelect, HashMap resultMap, SelectResult selectResult) throws TMDBException {
@@ -334,17 +351,33 @@ public class SelectImpl implements edu.whu.tmdb.query.operations.Select {
         // TODO-task5
         SelectExpressionItem selectItem = (SelectExpressionItem) item;
         // 1.attrName赋值
-
+        //projectResult.getAttrname()[indexInResult] = selectItem.getExpression().toString();
         // 2.alias赋值
-
+        if(selectItem.getAlias()==null){
+            projectResult.getAlias()[indexInResult] = "";
+            projectResult.getAttrname()[indexInResult] = selectItem.getExpression().toString();
+        }else{
+            projectResult.getAlias()[indexInResult] = selectItem.getAlias().getName();
+            projectResult.getAttrname()[indexInResult] = selectItem.getAlias().getName();
+        }
+        
         // 3.resTupleList赋值
         // ArrayList<String> TableColumn = new ArrayList<>();          // 含有两个元素的列表，结构为[tableName, columnName]
         // 调用attributeParser();
         // ArrayList<Object> dataList = (new Formula()).formulaExecute(selectItem.getExpression(), entireResult);  // 对表达式进行解析，获取该列的值
         // 调用getIndexInEntireResult();   // 找到表达式对应属性在原元组对应的下标
-
+        ArrayList<String> TableColumn = new ArrayList<>();
+        attributeParser(selectItem.toString(), TableColumn);
+        ArrayList<Object> dataList = 
+            (new Formula()).formulaExecute(selectItem.getExpression(), entireResult); 
+        int oridx = getIndexInEntireResult(entireResult, TableColumn.get(0), TableColumn.get(1));
+        projectResult.getType()[indexInResult] = entireResult.getType()[oridx];
+        projectResult.getAttrid()[indexInResult] = indexInResult;
         // 4.剩余属性赋值
-
+        for (int j = 0; j < resTupleList.tuplelist.size(); j++){
+            resTupleList.tuplelist.get(j).tuple[indexInResult] = dataList.get(j);
+            resTupleList.tuplelist.get(j).tupleIds[indexInResult] = -1; // who cares ?
+        }
     }
 
     /**

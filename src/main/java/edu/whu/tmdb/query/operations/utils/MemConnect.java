@@ -1,9 +1,9 @@
 package edu.whu.tmdb.query.operations.utils;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -119,8 +119,13 @@ public class MemConnect {
     public int getClassId(String tableName) throws TMDBException {
         // TODO
         // 不存在时抛出异常
-
-        return -1;
+        for (ClassTableItem item : getClassTableList()){
+            if(Objects.equals(item.classname, tableName)){
+                return item.classid;
+            }
+        }
+        throw new TMDBException(ErrorList.CLASS_NAME_DOES_NOT_EXIST, tableName);
+        //return -1;
     }
 
     /**
@@ -132,8 +137,16 @@ public class MemConnect {
     public List<String> getColumns(String tableName) throws TMDBException {
         // TODO
         // 不存在时抛出异常
-
-        return new ArrayList<>();
+        boolean found = false;
+        List<String> attribute_list=new ArrayList<>();
+        for (ClassTableItem item : getClassTableList()){
+            if(Objects.equals(item.classname, tableName)){
+                found = true;
+                attribute_list.add(item.attrname);
+            }
+        }
+        if(!found) throw new TMDBException(ErrorList.CLASS_NAME_DOES_NOT_EXIST, tableName);
+        return attribute_list;
     }
 
     /**
@@ -146,7 +159,16 @@ public class MemConnect {
         // TODO
         // 不存在时抛出异常
 
-        return -1;
+        //Integer attrnum=0;
+        for (ClassTableItem item : getClassTableList()){
+            if(Objects.equals(item.classname, tableName)){
+               //attrnum=attrnum+1;
+               return item.attrnum;
+            }
+        }
+        throw new TMDBException(ErrorList.CLASS_NAME_DOES_NOT_EXIST, tableName);
+
+        //return attrnum;
     }
 
     /**
@@ -158,8 +180,15 @@ public class MemConnect {
     public int getClassAttrnum(int classId) throws TMDBException {
         // TODO
         // 不存在时抛出异常
-
-        return -1;
+        //Integer attrnum=0;
+        for (ClassTableItem item : getClassTableList()){
+            if(Objects.equals(item.classid, classId)){
+                //attrnum=attrnum+1;
+                return item.attrnum;
+            }
+        }
+        throw new TMDBException(ErrorList.CLASS_ID_DOES_NOT_EXIST, classId);
+        //return attrnum;
     }
 
     /**
@@ -171,8 +200,32 @@ public class MemConnect {
     public int[] getAttridList(int classId, List<String> columns) throws TMDBException {
         // TODO
         // 不存在时抛出异常
-
-        return new int[0];
+        List<Integer> list=new ArrayList<>();
+        List<ClassTableItem> find_by_id=new ArrayList<>();
+        for (ClassTableItem item : getClassTableList()){
+            if(Objects.equals(item.classid, classId)){
+                find_by_id.add(item);
+            }
+        }
+        if(find_by_id.isEmpty()) throw new TMDBException(ErrorList.CLASS_ID_DOES_NOT_EXIST, classId);
+        for(String name : columns)
+        {
+            boolean found = false;
+            for (ClassTableItem item : find_by_id)
+            {
+                if (Objects.equals(item.attrname, name))
+                {
+                    list.add(item.attrid);
+                    found = true;
+                }
+            }
+            if(!found) throw new TMDBException(ErrorList.COLUMN_NAME_DOES_NOT_EXIST, name);
+        }
+        int[] array = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = list.get(i);
+        }
+        return array;
     }
 
     /**
@@ -184,8 +237,19 @@ public class MemConnect {
     public int getAttrid(int classId, String attrName) throws TMDBException {
         // TODO
         // 不存在时抛出异常
-
-        return -1;
+        boolean tableFound = false;
+        for (ClassTableItem item : getClassTableList()){
+            if(Objects.equals(item.classid, classId)){
+                tableFound = true;
+                if (Objects.equals(item.attrname,attrName))
+                {
+                    return item.attrid;
+                }
+            }
+        }
+        if(!tableFound){throw new TMDBException(ErrorList.CLASS_ID_DOES_NOT_EXIST, classId);}
+        else{throw new TMDBException(ErrorList.COLUMN_NAME_DOES_NOT_EXIST, attrName);}
+        //return -1;
     }
 
     /**
@@ -241,7 +305,11 @@ public class MemConnect {
      */
     public boolean classExist(String tableName) {
         // TODO
-
+        for (ClassTableItem item : getClassTableList()){
+            if(Objects.equals(item.classname, tableName)){
+                return true;
+            }
+        }
         return false;
     }
 
@@ -253,7 +321,15 @@ public class MemConnect {
      */
     public boolean columnExist(String tableName, String columnName) throws TMDBException {
         // TODO
+        for (ClassTableItem item : getClassTableList()){
+            if(Objects.equals(item.classname, tableName)){
+                if(Objects.equals(item.attrname, columnName))
+                {
+                    return true;
+                }
 
+            }
+        }
         return false;
     }
 
@@ -266,8 +342,13 @@ public class MemConnect {
     public ArrayList<Integer> getDeputyIdList(int classId) throws TMDBException {
         // TODO
         // 不存在时抛出异常
-
-        return new ArrayList<>();
+        ArrayList<Integer> array=new ArrayList<>();
+        for (DeputyTableItem item : getDeputyTableList()){
+            if(Objects.equals(item.originid, classId)){
+                array.add(item.deputyid);
+            }
+        }
+        return array;
     }
 
     public boolean Condition(String attrtype, Tuple tuple, int attrid, String value1) {

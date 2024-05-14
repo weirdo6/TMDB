@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.Statement;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import edu.whu.tmdb.query.operations.Exception.TMDBException;
 import edu.whu.tmdb.query.operations.Delete;
@@ -24,7 +25,11 @@ import edu.whu.tmdb.query.operations.utils.SelectResult;
 
 public class DeleteImpl implements Delete {
 
-    public DeleteImpl() {}
+    private MemConnect memConnect;
+
+    public DeleteImpl() {
+        this.memConnect = MemConnect.getInstance(MemManager.getInstance());
+    }
 
     @Override
     public void delete(Statement statement) throws JSQLParserException, TMDBException, IOException {
@@ -49,26 +54,47 @@ public class DeleteImpl implements Delete {
     }
 
     public void delete(TupleList tupleList) {
+
+        if(tupleList.tuplelist.isEmpty()) return;
+
         // TODO-task8
         // 1.删除源类tuple和object table
 
+        ArrayList<Integer> deputyTupleIdList = new ArrayList<>();
+
             // 使用MemConnect.getObjectTableList().remove();   // 删除对象表
-
-
-
+            List<ObjectTableItem> removeList = new ArrayList<>();
+            List<BiPointerTableItem> removeListBi = new ArrayList<>();
+            for(Tuple tuple : tupleList.tuplelist){
+                memConnect.DeleteTuple(tuple.tupleId);
+                tupleList.tuplenum--;
+                for(ObjectTableItem objItem : MemConnect.getObjectTableList()){
+                    if(objItem.classid==tuple.classId && objItem.tupleid==tuple.tupleId)
+                        removeList.add(objItem);
+                }
+                for(BiPointerTableItem biItem : MemConnect.getBiPointerTableList()){
+                    if(biItem.classid==tuple.classId && biItem.objectid==tuple.tupleId){
+                        removeListBi.add(biItem);
+                        deputyTupleIdList.add(biItem.deputyobjectid);
+                    }
+                }
+            }
         // 2.删除源类biPointerTable
 
             // 使用MemConnect.getBiPointerTableList().remove();
 
-
         // 3.根据biPointerTable递归删除代理类相关表
-        // if (deputyTupleIdList.isEmpty()) { return; }
-        // TupleList deputyTupleList = new TupleList();
-        // for (Integer deputyTupleId : deputyTupleIdList) {
-        //     Tuple tuple = memConnect.GetTuple(deputyTupleId);
-        //     deputyTupleList.addTuple(tuple);
-        // }
-        // delete(deputyTupleList);
+        if (deputyTupleIdList.isEmpty()) { return; }
+        TupleList deputyTupleList = new TupleList();
+        for (Integer deputyTupleId : deputyTupleIdList) {
+            Tuple tuple = memConnect.GetTuple(deputyTupleId);
+            deputyTupleList.addTuple(tuple);
+        }
+
+        MemConnect.getObjectTableList().removeAll(removeList);
+        MemConnect.getBiPointerTableList().removeAll(removeListBi);
+
+        delete(deputyTupleList);
     }
 
 }
