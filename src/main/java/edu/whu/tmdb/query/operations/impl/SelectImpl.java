@@ -376,8 +376,9 @@ public class SelectImpl implements edu.whu.tmdb.query.operations.Select {
         projectResult.getAttrid()[indexInResult] = indexInResult;
         // 4.剩余属性赋值
         for (int j = 0; j < resTupleList.tuplelist.size(); j++){
+            resTupleList.tuplelist.get(j).classId = entireResult.getTpl().tuplelist.get(j).classId;
             resTupleList.tuplelist.get(j).tuple[indexInResult] = dataList.get(j);
-            resTupleList.tuplelist.get(j).tupleIds[indexInResult] = -1; // who cares ?
+            resTupleList.tuplelist.get(j).tupleIds[indexInResult] = entireResult.getTpl().tuplelist.get(j).tupleIds[oridx];
         }
     }
 
@@ -409,6 +410,9 @@ public class SelectImpl implements edu.whu.tmdb.query.operations.Select {
                 projectResult.getClassName()[indexInResult] = className;
                 /////
                 for (int j = 0; j < resTupleList.tuplelist.size(); j++){
+                    /////
+                    resTupleList.tuplelist.get(j).classId = entireResult.getTpl().tuplelist.get(j).classId;
+                    /////
                     resTupleList.tuplelist.get(j).tuple[indexInResult] = entireResult.getTpl().tuplelist.get(j).tuple[i];
                     resTupleList.tuplelist.get(j).tupleIds[indexInResult] = entireResult.getTpl().tuplelist.get(j).tupleIds[i];
                 }
