@@ -149,7 +149,7 @@ public class CreateDeputyClassImpl implements CreateDeputyClass {
         int i=0;
         for(Tuple item:selectResult.getTpl().tuplelist)
         {
-            MemConnect.getBiPointerTableList().add(new BiPointerTableItem(item.classId,item.tupleId,deputyId,start_pos+i));
+            MemConnect.getBiPointerTableList().add(new BiPointerTableItem(item.classId,item.tupleIds[0],deputyId,start_pos+i));
             i++;
         }
         insert.execute(dep_class_name,attr_strings,selectResult.getTpl());

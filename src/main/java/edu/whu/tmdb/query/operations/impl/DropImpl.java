@@ -89,7 +89,7 @@ public class DropImpl implements Drop {
         while (iter.hasNext()) 
         {
             DeputyTableItem item = iter.next();
-            if (item.originid==classId) 
+            if (item.originid==classId || item.deputyid==classId) 
             {
                 iter.remove();
             }
@@ -106,7 +106,7 @@ public class DropImpl implements Drop {
         while (iter.hasNext()) 
         {
             BiPointerTableItem item = iter.next();
-            if (item.classid==classId) 
+            if (item.classid==classId||item.deputyid==classId) 
             {
                 iter.remove();
             }
@@ -123,7 +123,7 @@ public class DropImpl implements Drop {
         while (iter.hasNext()) 
         {
             SwitchingTableItem item = iter.next();
-            if (item.oriId==classId) 
+            if (item.oriId==classId||item.deputyId==classId) 
             {
                 iter.remove();
             }
