@@ -371,7 +371,7 @@ public class SelectImpl implements edu.whu.tmdb.query.operations.Select {
         ArrayList<Object> dataList = 
             (new Formula()).formulaExecute(selectItem.getExpression(), entireResult); 
         int oridx = getIndexInEntireResult(entireResult, TableColumn.get(0), TableColumn.get(1));
-        projectResult.getClassName()[indexInResult] = TableColumn.get(0);
+        projectResult.getClassName()[indexInResult] = entireResult.getClassName()[oridx];
         projectResult.getType()[indexInResult] = entireResult.getType()[oridx];
         projectResult.getAttrid()[indexInResult] = indexInResult;
         // 4.剩余属性赋值
